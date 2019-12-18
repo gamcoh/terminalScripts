@@ -11,7 +11,14 @@ changedFiles = [ item.a_path for item in repo.index.diff(None) ] + repo.untracke
 if len(sys.argv) < 2:
     sys.argv.append(':')
 
-if sys.argv[1] not in ['0']:
+def is_int(val):
+    try:
+        _ = int(val)
+        return _ >= 0
+    except:
+        return False
+
+if not is_int(sys.argv[1]):
     s = slice(*[{True: lambda n: None, False: int}[x == ''](x) for x in (sys.argv[1].split(':') + ['', '', ''])[:3]])
 else:
     s = slice(int(sys.argv[1]), int(sys.argv[1]) + 1, None)
