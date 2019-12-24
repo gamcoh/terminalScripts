@@ -1,4 +1,4 @@
-#!/home/gamzer/anaconda3/bin/python
+#!/bin/env python
 
 import git
 import os
