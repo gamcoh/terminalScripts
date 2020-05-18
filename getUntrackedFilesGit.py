@@ -3,13 +3,16 @@
 import git
 import os
 import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-n', default=':', type=str, dest='slice')
+parser.add_argument('--ignore', default='', type=str, dest='file_ignored')
+args = parser.parse_args()
 
 repo = git.Repo(os.getcwd())
 
 changedFiles = [ item.a_path for item in repo.index.diff(None) ] + repo.untracked_files
-
-if len(sys.argv) < 2:
-    sys.argv.append(':')
 
 def is_int(val):
     try:
@@ -18,11 +21,24 @@ def is_int(val):
     except:
         return False
 
-if not is_int(sys.argv[1]):
-    s = slice(*[{True: lambda n: None, False: int}[x == ''](x) for x in (sys.argv[1].split(':') + ['', '', ''])[:3]])
+if not is_int(args.slice):
+    s = slice(*[{True: lambda n: None, False: int}[x == ''](x) for x in (args.slice.split(':') + ['', '', ''])[:3]])
 else:
-    s = slice(int(sys.argv[1]), int(sys.argv[1]) + 1, None)
+    s = slice(int(args.slice), int(args.slice) + 1, None)
 
 files = changedFiles[s]
 
-print(' '.join(files))
+GLOBAL_IGNORES = {
+    'VIMIGNORE': ['.gitignore']
+}
+file_ignored = args.file_ignored.split(' ')
+for key, values in GLOBAL_IGNORES.items():
+    if key in file_ignored:
+        file_ignored.append(*values)
+
+files = [f for f in files if f not in file_ignored]
+
+if len(files) > 0:
+    print(' '.join(files))
+else:
+    sys.exit(1)
